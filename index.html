@@ -1,0 +1,1560 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Subnet Calculator - VLSM &amp; FLSM</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: auto;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #6366f1 100%);
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    .input-group input:focus, .input-group select:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .result-box {
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border-left: 4px solid #3b82f6;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #bfdbfe;
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-label {
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    .result-value {
+      color: #374151;
+      font-family: 'Courier New', monospace;
+    }
+
+    .vlsm-subnet-card {
+      background: white;
+      border: 2px solid #22c55e;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .class-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .class-a { background: #dbeafe; color: #1e40af; }
+    .class-b { background: #d1fae5; color: #065f46; }
+    .class-c { background: #fef3c7; color: #92400e; }
+
+    .reference-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .reference-table th {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .reference-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .reference-table tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .reference-table tr:hover {
+      background-color: #e0f2fe;
+    }
+
+    .info-card {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .icon-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .tab-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .tab:hover {
+      background: #e5e7eb;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        padding: 20px;
+      }
+      
+      .result-item {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .tab {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="w-full h-full overflow-auto" style="background: #f8fafc;"><!-- Header -->
+   <header class="gradient-bg text-white py-16 px-6">
+    <div class="max-w-6xl mx-auto text-center">
+     <div class="text-6xl mb-4">
+      🌐
+     </div>
+     <h1 id="main-title" class="text-4xl md:text-5xl font-bold mb-4">Professional Subnet Calculator</h1>
+     <p id="subtitle" class="text-xl md:text-2xl opacity-90">VLSM &amp; FLSM | All Classes A, B, C Support | Complete Networking Tool</p>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-6xl mx-auto px-6 py-12"><!-- Tab Navigation -->
+    <div class="tab-container">
+     <div class="tab active" onclick="switchTab('calculator')">
+      🧮 Subnet Calculator
+     </div>
+     <div class="tab" onclick="switchTab('vlsm')">
+      🎯 VLSM Calculator
+     </div>
+     <div class="tab" onclick="switchTab('classes')">
+      📚 IP Classes
+     </div>
+     <div class="tab" onclick="switchTab('cidr')">
+      📊 CIDR Reference
+     </div>
+     <div class="tab" onclick="switchTab('concepts')">
+      💡 Concepts
+     </div>
+    </div><!-- Professional Subnet Calculator Tab -->
+    <div id="calculator" class="tab-content active">
+     <div class="card">
+      <div class="icon-box" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white;">
+       🧮
+      </div>
+      <h2 id="calculator-heading" class="text-3xl font-bold mb-6" style="color: #1e40af;">Professional Subnet Calculator</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+       <div>
+        <div class="input-group"><label for="ip-address">IP Address / Network 🌐</label> <input type="text" id="ip-address" placeholder="e.g., 192.168.1.0 or 10.0.0.0" value="192.168.1.0"> <small style="color: #6b7280; margin-top: 4px; display: block;">✓ Supports all Classes A, B, C, D, E</small>
+        </div>
+        <div class="input-group"><label for="subnet-format">Subnet Mask Format 📝</label> <select id="subnet-format" onchange="toggleSubnetInput()"> <option value="cidr">CIDR Notation (e.g., /24)</option> <option value="decimal">Decimal Notation (e.g., 255.255.255.0)</option> </select>
+        </div>
+        <div class="input-group"><input type="text" id="cidr-input" placeholder="/24 or 24" value="24"> <input type="text" id="decimal-input" placeholder="255.255.255.0" style="display: none;">
+        </div><button class="btn btn-primary w-full" onclick="calculateSubnet()">🚀 Calculate Subnet</button> <button class="btn btn-secondary w-full mt-2" onclick="clearCalculator()">🔄 Clear All</button>
+        <div class="mt-4 p-4" style="background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+         <p style="font-size: 14px; color: #1e40af; font-weight: 600;">💡 Calculator Features:</p>
+         <ul style="font-size: 13px; color: #374151; margin-top: 8px; margin-left: 20px; line-height: 1.8;">
+          <li>✓ Works with all IP classes (A, B, C)</li>
+          <li>✓ Supports CIDR /1 to /32</li>
+          <li>✓ Auto-detects VLSM/FLSM</li>
+          <li>✓ Binary representation included</li>
+          <li>✓ Public/Private IP detection</li>
+          <li>✓ Wildcard mask calculation</li>
+         </ul>
+        </div>
+       </div>
+       <div id="results" style="display: none;">
+        <h3 class="text-xl font-bold mb-3" style="color: #1e40af;">📊 Calculation Results</h3>
+        <div class="result-box">
+         <div class="result-item"><span class="result-label">IP Address:</span> <span class="result-value" id="result-ip">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">IP Class:</span> <span class="result-value" id="result-class">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">IP Type:</span> <span class="result-value" id="result-type">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">Subnet Mask:</span> <span class="result-value" id="result-mask">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">CIDR Notation:</span> <span class="result-value" id="result-cidr">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">Wildcard Mask:</span> <span class="result-value" id="result-wildcard">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">Network Address:</span> <span class="result-value" id="result-network">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">Broadcast Address:</span> <span class="result-value" id="result-broadcast">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">First Usable Host:</span> <span class="result-value" id="result-first">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">Last Usable Host:</span> <span class="result-value" id="result-last">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">Total IP Addresses:</span> <span class="result-value" id="result-total">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">Usable Hosts:</span> <span class="result-value" id="result-usable">-</span>
+         </div>
+         <div class="result-item"><span class="result-label">Subnetting Type:</span> <span class="result-value" id="result-subnet-type">-</span>
+         </div>
+        </div><!-- Binary Representation Section -->
+        <div class="mt-4 p-4" style="background: #f9fafb; border-radius: 8px; border: 2px solid #e5e7eb;">
+         <h4 class="font-bold mb-3" style="color: #374151;">🔢 Binary Representation</h4>
+         <div style="font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.8;">
+          <div class="mb-2"><span style="color: #6b7280; font-weight: 600;">IP Address:</span><br><span id="result-ip-binary" style="color: #1e40af;">-</span>
+          </div>
+          <div class="mb-2"><span style="color: #6b7280; font-weight: 600;">Subnet Mask:</span><br><span id="result-mask-binary" style="color: #059669;">-</span>
+          </div>
+          <div class="mb-2"><span style="color: #6b7280; font-weight: 600;">Network Address:</span><br><span id="result-network-binary" style="color: #dc2626;">-</span>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Quick Reference Cards -->
+     <div class="grid md:grid-cols-3 gap-4 mt-6">
+      <div class="p-4 rounded-lg" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 2px solid #3b82f6;">
+       <h3 class="font-bold mb-2" style="color: #1e40af;">📌 Class A</h3>
+       <p style="font-size: 14px; color: #374151; line-height: 1.6;"><strong>Range:</strong> 1.0.0.0 - 126.255.255.255<br><strong>Default Mask:</strong> /8 (255.0.0.0)<br><strong>Hosts:</strong> 16,777,214</p>
+      </div>
+      <div class="p-4 rounded-lg" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); border: 2px solid #22c55e;">
+       <h3 class="font-bold mb-2" style="color: #065f46;">📌 Class B</h3>
+       <p style="font-size: 14px; color: #374151; line-height: 1.6;"><strong>Range:</strong> 128.0.0.0 - 191.255.255.255<br><strong>Default Mask:</strong> /16 (255.255.0.0)<br><strong>Hosts:</strong> 65,534</p>
+      </div>
+      <div class="p-4 rounded-lg" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b;">
+       <h3 class="font-bold mb-2" style="color: #92400e;">📌 Class C</h3>
+       <p style="font-size: 14px; color: #374151; line-height: 1.6;"><strong>Range:</strong> 192.0.0.0 - 223.255.255.255<br><strong>Default Mask:</strong> /24 (255.255.255.0)<br><strong>Hosts:</strong> 254</p>
+      </div>
+     </div>
+    </div><!-- VLSM Calculator Tab -->
+    <div id="vlsm" class="tab-content">
+     <div class="card" style="background: linear-gradient(to right, #f0fdf4, #dcfce7);">
+      <div class="icon-box" style="background: #22c55e; color: white;">
+       🎯
+      </div>
+      <h2 class="text-3xl font-bold mb-6" style="color: #16a34a;">VLSM (Variable Length Subnet Mask) Calculator</h2>
+      <p class="mb-6" style="color: #374151; font-size: 16px;">Efficiently divide your network into subnets of different sizes based on host requirements. Perfect for optimizing IP address allocation!</p>
+      <div class="grid md:grid-cols-2 gap-6">
+       <div>
+        <div class="input-group"><label for="vlsm-network">Network Address 🌐</label> <input type="text" id="vlsm-network" placeholder="e.g., 192.168.1.0" value="192.168.1.0">
+        </div>
+        <div class="input-group"><label for="vlsm-cidr">Network CIDR (Prefix Length) 📏</label> <input type="text" id="vlsm-cidr" placeholder="/24" value="24">
+        </div>
+        <div class="input-group"><label>Input Method 📝</label> <select id="vlsm-input-method" onchange="toggleVLSMInputMethod()"> <option value="dynamic">Dynamic Input (Add Multiple Subnets)</option> <option value="comma">Comma-Separated (Quick Entry)</option> </select>
+        </div><!-- Dynamic Input Method -->
+        <div id="dynamic-input-container">
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><label style="font-weight: 600; color: #374151;">Subnet Requirements 👥</label> <button class="btn" style="padding: 8px 16px; background: #22c55e; color: white; font-size: 14px;" onclick="addHostInput()">➕ Add Subnet</button>
+         </div>
+         <div id="host-inputs-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 12px;"><!-- Host inputs will be added here dynamically -->
+          <div class="host-input-row" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;"><input type="text" class="host-name-input" placeholder="Subnet name (e.g., Sales)" style="flex: 2; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;"> <input type="number" class="host-count-input" placeholder="Hosts" min="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;"> <button onclick="removeHostInput(this)" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">🗑️</button>
+          </div>
+         </div><small style="color: #6b7280; display: block; margin-bottom: 12px;">💡 Add multiple subnets with names for better organization</small>
+        </div><!-- Comma-Separated Input Method -->
+        <div id="comma-input-container" style="display: none;">
+         <div class="input-group"><label for="vlsm-hosts">Required Hosts per Subnet (comma-separated) 👥</label> <input type="text" id="vlsm-hosts" placeholder="e.g., 100, 50, 25, 10" value="100, 50, 25, 10"> <small style="color: #6b7280; margin-top: 4px; display: block;">💡 List from largest to smallest for optimal allocation</small>
+         </div>
+        </div><button class="btn btn-primary w-full" onclick="calculateVLSM()">🎯 Calculate VLSM Subnets</button> <button class="btn btn-secondary w-full mt-2" onclick="clearVLSM()">🔄 Clear All</button>
+        <div class="mt-4 p-4" style="background: white; border-radius: 8px; border-left: 4px solid #22c55e;">
+         <p style="font-size: 14px; color: #16a34a; font-weight: 600;">📚 How VLSM Works:</p>
+         <ul style="font-size: 13px; color: #374151; margin-top: 8px; margin-left: 20px; line-height: 1.8;">
+          <li>1. Sorts requirements by size (largest first)</li>
+          <li>2. Allocates subnet for each requirement</li>
+          <li>3. Calculates optimal CIDR for each subnet</li>
+          <li>4. Prevents IP address wastage</li>
+          <li>5. Shows all subnet details instantly</li>
+         </ul>
+        </div>
+       </div>
+       <div id="vlsm-results" style="display: none;">
+        <h3 class="text-xl font-bold mb-3" style="color: #16a34a;">📊 VLSM Subnets Allocation</h3>
+        <div id="vlsm-output" style="max-height: 500px; overflow-y: auto;"></div>
+       </div>
+      </div>
+     </div><!-- FLSM Example -->
+     <div class="card" style="background: linear-gradient(to right, #fef3c7, #fde68a);">
+      <div class="icon-box" style="background: #f59e0b; color: white;">
+       📐
+      </div>
+      <h2 class="text-3xl font-bold mb-4" style="color: #d97706;">FLSM vs VLSM Comparison</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+       <div class="p-4 bg-white rounded-lg">
+        <h3 class="font-bold mb-3 text-xl" style="color: #d97706;">FLSM (Fixed Length)</h3>
+        <p class="mb-3" style="color: #374151;">All subnets have the same size regardless of requirements.</p>
+        <p class="mb-2" style="color: #374151;"><strong>Example:</strong> Divide 192.168.1.0/24 into 4 equal subnets:</p>
+        <ul style="color: #374151; margin-left: 20px; font-family: 'Courier New', monospace; font-size: 13px;">
+         <li>192.168.1.0/26 (62 hosts)</li>
+         <li>192.168.1.64/26 (62 hosts)</li>
+         <li>192.168.1.128/26 (62 hosts)</li>
+         <li>192.168.1.192/26 (62 hosts)</li>
+        </ul>
+        <p class="mt-3 text-sm" style="color: #92400e;"><strong>❌ Problem:</strong> Wastes IPs if you need different sizes!</p>
+       </div>
+       <div class="p-4 bg-white rounded-lg">
+        <h3 class="font-bold mb-3 text-xl" style="color: #16a34a;">VLSM (Variable Length)</h3>
+        <p class="mb-3" style="color: #374151;">Each subnet sized exactly for its requirements.</p>
+        <p class="mb-2" style="color: #374151;"><strong>Example:</strong> 192.168.1.0/24 for different needs:</p>
+        <ul style="color: #374151; margin-left: 20px; font-family: 'Courier New', monospace; font-size: 13px;">
+         <li>Need 100 hosts → /25 (126 hosts)</li>
+         <li>Need 50 hosts → /26 (62 hosts)</li>
+         <li>Need 25 hosts → /27 (30 hosts)</li>
+         <li>Need 10 hosts → /28 (14 hosts)</li>
+        </ul>
+        <p class="mt-3 text-sm" style="color: #065f46;"><strong>✅ Benefit:</strong> Optimal IP utilization!</p>
+       </div>
+      </div>
+     </div>
+    </div><!-- IP Classes Tab -->
+    <div id="classes" class="tab-content">
+     <div class="card">
+      <div class="icon-box" style="background: #3b82f6; color: white;">
+       📚
+      </div>
+      <h2 class="text-3xl font-bold mb-6" style="color: #1e40af;">IP Address Classes (A to Z Guide)</h2>
+      <div class="space-y-4">
+       <div class="info-card" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 3px solid #3b82f6;">
+        <h3 class="text-2xl font-bold mb-3" style="color: #1e40af;">Class A <span class="class-badge class-a">1.0.0.0 - 126.255.255.255</span></h3>
+        <div class="grid md:grid-cols-2 gap-4">
+         <div>
+          <p class="mb-2"><strong>Default Mask:</strong> 255.0.0.0 (/8)</p>
+          <p class="mb-2"><strong>Networks:</strong> 128 (2^7)</p>
+          <p class="mb-2"><strong>Hosts per Network:</strong> 16,777,214</p>
+          <p class="mb-2"><strong>First Octet Range:</strong> 1-126</p>
+         </div>
+         <div>
+          <p class="mb-2"><strong>Used For:</strong> Very large organizations</p>
+          <p class="mb-2"><strong>Binary Start:</strong> 0xxxxxxx</p>
+          <p class="mb-2"><strong>Private Range:</strong> 10.0.0.0 - 10.255.255.255</p>
+          <p class="mb-2"><strong>Example:</strong> 10.20.30.40</p>
+         </div>
+        </div>
+       </div>
+       <div class="info-card" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); border: 3px solid #22c55e;">
+        <h3 class="text-2xl font-bold mb-3" style="color: #065f46;">Class B <span class="class-badge class-b">128.0.0.0 - 191.255.255.255</span></h3>
+        <div class="grid md:grid-cols-2 gap-4">
+         <div>
+          <p class="mb-2"><strong>Default Mask:</strong> 255.255.0.0 (/16)</p>
+          <p class="mb-2"><strong>Networks:</strong> 16,384 (2^14)</p>
+          <p class="mb-2"><strong>Hosts per Network:</strong> 65,534</p>
+          <p class="mb-2"><strong>First Octet Range:</strong> 128-191</p>
+         </div>
+         <div>
+          <p class="mb-2"><strong>Used For:</strong> Medium to large organizations</p>
+          <p class="mb-2"><strong>Binary Start:</strong> 10xxxxxx</p>
+          <p class="mb-2"><strong>Private Range:</strong> 172.16.0.0 - 172.31.255.255</p>
+          <p class="mb-2"><strong>Example:</strong> 172.16.10.5</p>
+         </div>
+        </div>
+       </div>
+       <div class="info-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 3px solid #f59e0b;">
+        <h3 class="text-2xl font-bold mb-3" style="color: #92400e;">Class C <span class="class-badge class-c">192.0.0.0 - 223.255.255.255</span></h3>
+        <div class="grid md:grid-cols-2 gap-4">
+         <div>
+          <p class="mb-2"><strong>Default Mask:</strong> 255.255.255.0 (/24)</p>
+          <p class="mb-2"><strong>Networks:</strong> 2,097,152 (2^21)</p>
+          <p class="mb-2"><strong>Hosts per Network:</strong> 254</p>
+          <p class="mb-2"><strong>First Octet Range:</strong> 192-223</p>
+         </div>
+         <div>
+          <p class="mb-2"><strong>Used For:</strong> Small organizations, homes</p>
+          <p class="mb-2"><strong>Binary Start:</strong> 110xxxxx</p>
+          <p class="mb-2"><strong>Private Range:</strong> 192.168.0.0 - 192.168.255.255</p>
+          <p class="mb-2"><strong>Example:</strong> 192.168.1.100</p>
+         </div>
+        </div>
+       </div>
+       <div class="info-card" style="background: linear-gradient(135deg, #fecaca, #fca5a5);">
+        <h3 class="text-2xl font-bold mb-3" style="color: #991b1b;">Class D <span class="class-badge" style="background: #fecaca; color: #991b1b;">224.0.0.0 - 239.255.255.255</span></h3>
+        <p class="mb-2"><strong>Purpose:</strong> Multicast groups (one-to-many communication)</p>
+        <p class="mb-2"><strong>Binary Start:</strong> 1110xxxx</p>
+        <p><strong>Note:</strong> Not available for regular host addressing. Used for streaming, video conferencing.</p>
+       </div>
+       <div class="info-card" style="background: linear-gradient(135deg, #e9d5ff, #d8b4fe);">
+        <h3 class="text-2xl font-bold mb-3" style="color: #6b21a8;">Class E <span class="class-badge" style="background: #e9d5ff; color: #6b21a8;">240.0.0.0 - 255.255.255.255</span></h3>
+        <p class="mb-2"><strong>Purpose:</strong> Experimental and research</p>
+        <p class="mb-2"><strong>Binary Start:</strong> 1111xxxx</p>
+        <p><strong>Note:</strong> Reserved for future use. Not available for general use.</p>
+       </div>
+      </div>
+      <div class="mt-6 p-4" style="background: #f0f9ff; border-radius: 12px; border-left: 4px solid #3b82f6;">
+       <h3 class="font-bold text-lg mb-2" style="color: #1e40af;">💡 Special IP Addresses</h3>
+       <div class="grid md:grid-cols-2 gap-4 mt-3">
+        <ul class="space-y-2" style="color: #374151;">
+         <li><strong>127.0.0.0/8:</strong> Loopback (localhost)</li>
+         <li><strong>0.0.0.0:</strong> Default network/unknown</li>
+         <li><strong>255.255.255.255:</strong> Limited broadcast</li>
+         <li><strong>169.254.0.0/16:</strong> APIPA (Auto-config)</li>
+        </ul>
+        <ul class="space-y-2" style="color: #374151;">
+         <li><strong>Private IP Ranges:</strong>
+          <ul class="ml-6 mt-2 space-y-1">
+           <li>Class A: 10.0.0.0/8</li>
+           <li>Class B: 172.16.0.0/12</li>
+           <li>Class C: 192.168.0.0/16</li>
+          </ul></li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div><!-- CIDR Reference Tab -->
+    <div id="cidr" class="tab-content">
+     <div class="card">
+      <div class="icon-box" style="background: #10b981; color: white;">
+       📊
+      </div>
+      <h2 class="text-3xl font-bold mb-6" style="color: #059669;">Complete CIDR Notation Reference</h2>
+      <p class="text-lg mb-4">CIDR (Classless Inter-Domain Routing) uses slash notation to represent subnet masks efficiently. Master this table for quick calculations!</p>
+      <div style="overflow-x: auto;">
+       <table class="reference-table">
+        <thead>
+         <tr>
+          <th>CIDR</th>
+          <th>Subnet Mask</th>
+          <th>Wildcard Mask</th>
+          <th>Binary Network Bits</th>
+          <th>Total IPs</th>
+          <th>Usable Hosts</th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr>
+          <td>/32</td>
+          <td>255.255.255.255</td>
+          <td>0.0.0.0</td>
+          <td>32</td>
+          <td>1</td>
+          <td>1</td>
+         </tr>
+         <tr>
+          <td>/31</td>
+          <td>255.255.255.254</td>
+          <td>0.0.0.1</td>
+          <td>31</td>
+          <td>2</td>
+          <td>2*</td>
+         </tr>
+         <tr>
+          <td>/30</td>
+          <td>255.255.255.252</td>
+          <td>0.0.0.3</td>
+          <td>30</td>
+          <td>4</td>
+          <td>2</td>
+         </tr>
+         <tr>
+          <td>/29</td>
+          <td>255.255.255.248</td>
+          <td>0.0.0.7</td>
+          <td>29</td>
+          <td>8</td>
+          <td>6</td>
+         </tr>
+         <tr>
+          <td>/28</td>
+          <td>255.255.255.240</td>
+          <td>0.0.0.15</td>
+          <td>28</td>
+          <td>16</td>
+          <td>14</td>
+         </tr>
+         <tr>
+          <td>/27</td>
+          <td>255.255.255.224</td>
+          <td>0.0.0.31</td>
+          <td>27</td>
+          <td>32</td>
+          <td>30</td>
+         </tr>
+         <tr>
+          <td>/26</td>
+          <td>255.255.255.192</td>
+          <td>0.0.0.63</td>
+          <td>26</td>
+          <td>64</td>
+          <td>62</td>
+         </tr>
+         <tr>
+          <td>/25</td>
+          <td>255.255.255.128</td>
+          <td>0.0.0.127</td>
+          <td>25</td>
+          <td>128</td>
+          <td>126</td>
+         </tr>
+         <tr>
+          <td>/24</td>
+          <td>255.255.255.0</td>
+          <td>0.0.0.255</td>
+          <td>24</td>
+          <td>256</td>
+          <td>254</td>
+         </tr>
+         <tr>
+          <td>/23</td>
+          <td>255.255.254.0</td>
+          <td>0.0.1.255</td>
+          <td>23</td>
+          <td>512</td>
+          <td>510</td>
+         </tr>
+         <tr>
+          <td>/22</td>
+          <td>255.255.252.0</td>
+          <td>0.0.3.255</td>
+          <td>22</td>
+          <td>1,024</td>
+          <td>1,022</td>
+         </tr>
+         <tr>
+          <td>/21</td>
+          <td>255.255.248.0</td>
+          <td>0.0.7.255</td>
+          <td>21</td>
+          <td>2,048</td>
+          <td>2,046</td>
+         </tr>
+         <tr>
+          <td>/20</td>
+          <td>255.255.240.0</td>
+          <td>0.0.15.255</td>
+          <td>20</td>
+          <td>4,096</td>
+          <td>4,094</td>
+         </tr>
+         <tr>
+          <td>/19</td>
+          <td>255.255.224.0</td>
+          <td>0.0.31.255</td>
+          <td>19</td>
+          <td>8,192</td>
+          <td>8,190</td>
+         </tr>
+         <tr>
+          <td>/18</td>
+          <td>255.255.192.0</td>
+          <td>0.0.63.255</td>
+          <td>18</td>
+          <td>16,384</td>
+          <td>16,382</td>
+         </tr>
+         <tr>
+          <td>/17</td>
+          <td>255.255.128.0</td>
+          <td>0.0.127.255</td>
+          <td>17</td>
+          <td>32,768</td>
+          <td>32,766</td>
+         </tr>
+         <tr>
+          <td>/16</td>
+          <td>255.255.0.0</td>
+          <td>0.0.255.255</td>
+          <td>16</td>
+          <td>65,536</td>
+          <td>65,534</td>
+         </tr>
+         <tr>
+          <td>/15</td>
+          <td>255.254.0.0</td>
+          <td>0.1.255.255</td>
+          <td>15</td>
+          <td>131,072</td>
+          <td>131,070</td>
+         </tr>
+         <tr>
+          <td>/14</td>
+          <td>255.252.0.0</td>
+          <td>0.3.255.255</td>
+          <td>14</td>
+          <td>262,144</td>
+          <td>262,142</td>
+         </tr>
+         <tr>
+          <td>/13</td>
+          <td>255.248.0.0</td>
+          <td>0.7.255.255</td>
+          <td>13</td>
+          <td>524,288</td>
+          <td>524,286</td>
+         </tr>
+         <tr>
+          <td>/12</td>
+          <td>255.240.0.0</td>
+          <td>0.15.255.255</td>
+          <td>12</td>
+          <td>1,048,576</td>
+          <td>1,048,574</td>
+         </tr>
+         <tr>
+          <td>/11</td>
+          <td>255.224.0.0</td>
+          <td>0.31.255.255</td>
+          <td>11</td>
+          <td>2,097,152</td>
+          <td>2,097,150</td>
+         </tr>
+         <tr>
+          <td>/10</td>
+          <td>255.192.0.0</td>
+          <td>0.63.255.255</td>
+          <td>10</td>
+          <td>4,194,304</td>
+          <td>4,194,302</td>
+         </tr>
+         <tr>
+          <td>/9</td>
+          <td>255.128.0.0</td>
+          <td>0.127.255.255</td>
+          <td>9</td>
+          <td>8,388,608</td>
+          <td>8,388,606</td>
+         </tr>
+         <tr>
+          <td>/8</td>
+          <td>255.0.0.0</td>
+          <td>0.255.255.255</td>
+          <td>8</td>
+          <td>16,777,216</td>
+          <td>16,777,214</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6 mt-6">
+       <div class="p-4" style="background: #fef3c7; border-radius: 12px; border-left: 4px solid #f59e0b;">
+        <h3 class="font-bold text-lg mb-2" style="color: #92400e;">📝 Quick Formulas</h3>
+        <p class="mb-2"><strong>Total IP Addresses:</strong></p>
+        <p class="mb-3 font-mono" style="color: #374151;">2^(32 - CIDR)</p>
+        <p class="mb-2"><strong>Usable Hosts:</strong></p>
+        <p class="mb-3 font-mono" style="color: #374151;">2^(32 - CIDR) - 2</p>
+        <p class="text-sm italic" style="color: #92400e;">* /31 is special for point-to-point links (RFC 3021)</p>
+       </div>
+       <div class="p-4" style="background: #d1fae5; border-radius: 12px; border-left: 4px solid #22c55e;">
+        <h3 class="font-bold text-lg mb-2" style="color: #065f46;">🎯 Common Use Cases</h3>
+        <ul class="space-y-2" style="color: #374151;">
+         <li><strong>/30:</strong> Point-to-point links (2 hosts)</li>
+         <li><strong>/24:</strong> Standard small network (254 hosts)</li>
+         <li><strong>/22:</strong> Medium business (1,022 hosts)</li>
+         <li><strong>/20:</strong> Large organization (4,094 hosts)</li>
+         <li><strong>/16:</strong> Campus network (65,534 hosts)</li>
+         <li><strong>/8:</strong> ISP / Very large enterprise</li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div><!-- Concepts Tab -->
+    <div id="concepts" class="tab-content">
+     <div class="card">
+      <div class="icon-box" style="background: #8b5cf6; color: white;">
+       💡
+      </div>
+      <h2 class="text-3xl font-bold mb-6" style="color: #7c3aed;">Networking Key Concepts</h2>
+      <div class="space-y-6">
+       <div class="p-6 rounded-lg" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 2px solid #3b82f6;">
+        <h3 class="text-2xl font-bold mb-3" style="color: #1e40af;">🔢 Binary &amp; Subnet Masks</h3>
+        <p class="mb-3">Subnet masks use binary to determine network and host portions of an IP address.</p>
+        <div class="p-4 bg-white rounded-lg" style="font-family: 'Courier New', monospace; font-size: 13px;">
+         <p class="mb-1"><strong>IP Address:</strong> 192.168.1.10</p>
+         <p class="mb-1" style="color: #1e40af;">Binary: 11000000.10101000.00000001.00001010</p>
+         <p class="mb-2"><strong>Subnet Mask:</strong> 255.255.255.0 (/24)</p>
+         <p style="color: #059669;">Binary: 11111111.11111111.11111111.00000000</p>
+         <div class="mt-3 p-2" style="background: #fef3c7; border-radius: 6px;">
+          <p style="color: #92400e;"><strong>Network bits = 1s (24 bits)</strong></p>
+          <p style="color: #92400e;"><strong>Host bits = 0s (8 bits)</strong></p>
+         </div>
+        </div>
+       </div>
+       <div class="p-6 rounded-lg" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b;">
+        <h3 class="text-2xl font-bold mb-3" style="color: #92400e;">🌐 Subnetting Fundamentals</h3>
+        <p class="mb-3">Subnetting divides a network into smaller sub-networks for better organization, security, and efficiency.</p>
+        <div class="grid md:grid-cols-2 gap-4">
+         <div>
+          <p class="mb-2 font-bold">✅ Benefits:</p>
+          <ul class="list-disc ml-6 space-y-1">
+           <li>Improved network performance</li>
+           <li>Enhanced security</li>
+           <li>Better IP address management</li>
+           <li>Reduced broadcast traffic</li>
+           <li>Easier troubleshooting</li>
+          </ul>
+         </div>
+         <div>
+          <p class="mb-2 font-bold">📋 Key Steps:</p>
+          <ul class="list-disc ml-6 space-y-1">
+           <li>Determine requirements</li>
+           <li>Choose subnet mask</li>
+           <li>Calculate network addresses</li>
+           <li>Define host ranges</li>
+           <li>Document allocation</li>
+          </ul>
+         </div>
+        </div>
+       </div>
+       <div class="p-6 rounded-lg" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); border: 2px solid #22c55e;">
+        <h3 class="text-2xl font-bold mb-3" style="color: #065f46;">📡 Network, Host, and Broadcast</h3>
+        <div class="space-y-4">
+         <div>
+          <p class="font-bold mb-2">🌐 Network Address:</p>
+          <p class="mb-2">First IP in the subnet (all host bits = 0). Identifies the network itself.</p>
+         </div>
+         <div>
+          <p class="font-bold mb-2">📢 Broadcast Address:</p>
+          <p class="mb-2">Last IP in the subnet (all host bits = 1). Used to send to all devices.</p>
+         </div>
+         <div>
+          <p class="font-bold mb-2">👥 Host Addresses:</p>
+          <p class="mb-2">All IPs between network and broadcast. Assignable to devices.</p>
+         </div>
+         <div class="p-4 bg-white rounded-lg mt-3" style="font-family: 'Courier New', monospace; font-size: 13px;">
+          <p class="mb-1"><strong>Example:</strong> 192.168.1.0/24</p>
+          <p class="mb-1" style="color: #dc2626;">Network: 192.168.1.0</p>
+          <p class="mb-1" style="color: #1e40af;">First Host: 192.168.1.1</p>
+          <p class="mb-1" style="color: #1e40af;">Last Host: 192.168.1.254</p>
+          <p style="color: #dc2626;">Broadcast: 192.168.1.255</p>
+          <p class="mt-2" style="color: #059669;"><strong>Usable Hosts: 254</strong></p>
+         </div>
+        </div>
+       </div>
+       <div class="p-6 rounded-lg" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8); border: 2px solid #ec4899;">
+        <h3 class="text-2xl font-bold mb-3" style="color: #9f1239;">🔒 Public vs. Private IPs</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+         <div class="p-4 bg-white rounded-lg">
+          <p class="font-bold mb-2" style="color: #1e40af;">🌍 Public IPs:</p>
+          <ul class="list-disc ml-6 space-y-1">
+           <li>Globally unique</li>
+           <li>Routable on internet</li>
+           <li>Assigned by ISP</li>
+           <li>Limited availability</li>
+           <li>Requires registration</li>
+          </ul>
+         </div>
+         <div class="p-4 bg-white rounded-lg">
+          <p class="font-bold mb-2" style="color: #059669;">🏠 Private IPs:</p>
+          <ul class="list-disc ml-6 space-y-1">
+           <li>Used in local networks</li>
+           <li>Not routable on internet</li>
+           <li>Free to use (RFC 1918)</li>
+           <li>Requires NAT for internet</li>
+           <li>Can be reused</li>
+          </ul>
+         </div>
+        </div>
+        <div class="mt-4 p-3" style="background: #fef3c7; border-radius: 8px;">
+         <p class="font-bold mb-2">📝 Private IP Ranges (RFC 1918):</p>
+         <ul style="font-family: 'Courier New', monospace; font-size: 13px;">
+          <li>10.0.0.0/8 → 10.0.0.0 - 10.255.255.255</li>
+          <li>172.16.0.0/12 → 172.16.0.0 - 172.31.255.255</li>
+          <li>192.168.0.0/16 → 192.168.0.0 - 192.168.255.255</li>
+         </ul>
+        </div>
+       </div>
+       <div class="p-6 rounded-lg" style="background: linear-gradient(135deg, #e9d5ff, #d8b4fe); border: 2px solid #a855f7;">
+        <h3 class="text-2xl font-bold mb-3" style="color: #6b21a8;">⚡ Wildcard Masks</h3>
+        <p class="mb-3">Wildcard masks are the inverse of subnet masks. Used in ACLs and routing protocols.</p>
+        <div class="p-4 bg-white rounded-lg">
+         <p class="mb-2"><strong>Formula:</strong> Wildcard = 255.255.255.255 - Subnet Mask</p>
+         <div class="mt-3" style="font-family: 'Courier New', monospace; font-size: 13px;">
+          <p class="mb-1">Subnet: 255.255.255.0</p>
+          <p style="color: #059669;">Wildcard: 0.0.0.255</p>
+          <div class="mt-3">
+           <p class="mb-1">Subnet: 255.255.252.0</p>
+           <p style="color: #059669;">Wildcard: 0.0.3.255</p>
+          </div>
+         </div>
+         <p class="mt-3 text-sm" style="color: #6b21a8;"><strong>Rule:</strong> 0 = must match, 255 = don't care</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </main><!-- Footer -->
+   <footer class="gradient-bg text-white py-8 px-6">
+    <div class="max-w-6xl mx-auto text-center">
+     <p id="footer-text" class="text-lg">© 2024 Professional Subnet Calculator | Complete VLSM &amp; FLSM Guide for Network Students</p>
+     <p class="mt-2 opacity-80">Master IP addressing, subnetting, and network design with professional tools!</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+    const defaultConfig = {
+      main_title: "Professional Subnet Calculator",
+      subtitle: "VLSM & FLSM | All Classes A, B, C Support | Complete Networking Tool",
+      calculator_heading: "Professional Subnet Calculator",
+      footer_text: "© 2024 Professional Subnet Calculator | Complete VLSM & FLSM Guide for Network Students",
+      primary_color: "#3b82f6",
+      secondary_color: "#0ea5e9",
+      accent_color: "#22c55e",
+      text_color: "#374151",
+      background_color: "#f8fafc",
+      font_family: "system-ui, -apple-system, sans-serif",
+      font_size: 16
+    };
+
+    async function onConfigChange(config) {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const fontFamily = `${customFont}, ${baseFontStack}`;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      document.body.style.fontFamily = fontFamily;
+      
+      document.getElementById('main-title').textContent = config.main_title || defaultConfig.main_title;
+      document.getElementById('main-title').style.fontSize = `${baseSize * 2.5}px`;
+      
+      document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+      document.getElementById('subtitle').style.fontSize = `${baseSize * 1.25}px`;
+      
+      document.getElementById('calculator-heading').textContent = config.calculator_heading || defaultConfig.calculator_heading;
+      document.getElementById('calculator-heading').style.fontSize = `${baseSize * 1.875}px`;
+      
+      document.getElementById('footer-text').textContent = config.footer_text || defaultConfig.footer_text;
+      document.getElementById('footer-text').style.fontSize = `${baseSize * 1.125}px`;
+      
+      const allText = document.querySelectorAll('p, li, td, label, input, select, button');
+      allText.forEach(el => el.style.fontSize = `${baseSize}px`);
+      
+      const h2s = document.querySelectorAll('h2');
+      h2s.forEach(h => h.style.fontSize = `${baseSize * 1.875}px`);
+      
+      const h3s = document.querySelectorAll('h3');
+      h3s.forEach(h => h.style.fontSize = `${baseSize * 1.25}px`);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.primary_color || defaultConfig.primary_color,
+              set: (value) => {
+                config.primary_color = value;
+                window.elementSdk.setConfig({ primary_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_color || defaultConfig.secondary_color,
+              set: (value) => {
+                config.secondary_color = value;
+                window.elementSdk.setConfig({ secondary_color: value });
+              }
+            },
+            {
+              get: () => config.accent_color || defaultConfig.accent_color,
+              set: (value) => {
+                config.accent_color = value;
+                window.elementSdk.setConfig({ accent_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["main_title", config.main_title || defaultConfig.main_title],
+          ["subtitle", config.subtitle || defaultConfig.subtitle],
+          ["calculator_heading", config.calculator_heading || defaultConfig.calculator_heading],
+          ["footer_text", config.footer_text || defaultConfig.footer_text]
+        ])
+      });
+    }
+
+    // Tab switching functionality
+    function switchTab(tabName) {
+      const tabs = document.querySelectorAll('.tab');
+      const contents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach(tab => tab.classList.remove('active'));
+      contents.forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+    }
+
+    // Toggle subnet input format
+    function toggleSubnetInput() {
+      const format = document.getElementById('subnet-format').value;
+      const cidrInput = document.getElementById('cidr-input');
+      const decimalInput = document.getElementById('decimal-input');
+      
+      if (format === 'cidr') {
+        cidrInput.style.display = 'block';
+        decimalInput.style.display = 'none';
+      } else {
+        cidrInput.style.display = 'none';
+        decimalInput.style.display = 'block';
+      }
+    }
+
+    // IP validation
+    function isValidIP(ip) {
+      const parts = ip.split('.');
+      if (parts.length !== 4) return false;
+      return parts.every(part => {
+        const num = parseInt(part);
+        return !isNaN(num) && num >= 0 && num <= 255;
+      });
+    }
+
+    // Convert IP to binary
+    function ipToBinary(ip) {
+      return ip.split('.').map(octet => 
+        parseInt(octet).toString(2).padStart(8, '0')
+      ).join('.');
+    }
+
+    // Convert CIDR to subnet mask
+    function cidrToMask(cidr) {
+      const mask = [];
+      for (let i = 0; i < 4; i++) {
+        const n = Math.min(cidr, 8);
+        mask.push(256 - Math.pow(2, 8 - n));
+        cidr -= n;
+      }
+      return mask.join('.');
+    }
+
+    // Convert subnet mask to CIDR
+    function maskToCidr(mask) {
+      return mask.split('.').map(octet => 
+        parseInt(octet).toString(2)
+      ).join('').split('1').length - 1;
+    }
+
+    // Calculate wildcard mask
+    function getWildcardMask(subnetMask) {
+      return subnetMask.split('.').map(octet => 255 - parseInt(octet)).join('.');
+    }
+
+    // Get IP class
+    function getIPClass(firstOctet) {
+      if (firstOctet >= 1 && firstOctet <= 126) return 'A';
+      if (firstOctet >= 128 && firstOctet <= 191) return 'B';
+      if (firstOctet >= 192 && firstOctet <= 223) return 'C';
+      if (firstOctet >= 224 && firstOctet <= 239) return 'D (Multicast)';
+      if (firstOctet >= 240 && firstOctet <= 255) return 'E (Reserved)';
+      return 'Unknown';
+    }
+
+    // Get default mask for class
+    function getDefaultMaskForClass(ipClass) {
+      if (ipClass === 'A') return '255.0.0.0';
+      if (ipClass === 'B') return '255.255.0.0';
+      if (ipClass === 'C') return '255.255.255.0';
+      return null;
+    }
+
+    // Determine subnetting type (VLSM/FLSM)
+    function getSubnetType(cidr, ipClass) {
+      const classChar = ipClass.charAt(0);
+      let defaultCidr;
+      
+      if (classChar === 'A') defaultCidr = 8;
+      else if (classChar === 'B') defaultCidr = 16;
+      else if (classChar === 'C') defaultCidr = 24;
+      else return 'N/A';
+      
+      if (cidr === defaultCidr) {
+        return 'Classful (No subnetting)';
+      } else if (cidr > defaultCidr) {
+        return 'VLSM/FLSM (Subnetted)';
+      } else {
+        return 'Supernet (Aggregated)';
+      }
+    }
+
+    // Check if IP is private
+    function isPrivateIP(ip) {
+      const parts = ip.split('.').map(Number);
+      if (parts[0] === 10) return true;
+      if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+      if (parts[0] === 192 && parts[1] === 168) return true;
+      if (parts[0] === 127) return true; // Loopback
+      return false;
+    }
+
+    // Calculate subnet
+    function calculateSubnet() {
+      const ipInput = document.getElementById('ip-address').value.trim();
+      const format = document.getElementById('subnet-format').value;
+      
+      let cidr, subnetMask;
+      
+      if (format === 'cidr') {
+        let cidrInput = document.getElementById('cidr-input').value.trim();
+        cidrInput = cidrInput.replace('/', '');
+        cidr = parseInt(cidrInput);
+        
+        if (isNaN(cidr) || cidr < 0 || cidr > 32) {
+          showError('Please enter a valid CIDR notation (0-32)');
+          return;
+        }
+        subnetMask = cidrToMask(cidr);
+      } else {
+        subnetMask = document.getElementById('decimal-input').value.trim();
+        if (!isValidIP(subnetMask)) {
+          showError('Please enter a valid subnet mask');
+          return;
+        }
+        cidr = maskToCidr(subnetMask);
+      }
+      
+      if (!isValidIP(ipInput)) {
+        showError('Please enter a valid IP address');
+        return;
+      }
+      
+      const ipParts = ipInput.split('.').map(Number);
+      const maskParts = subnetMask.split('.').map(Number);
+      
+      // Calculate network address
+      const networkParts = ipParts.map((part, i) => part & maskParts[i]);
+      const networkAddress = networkParts.join('.');
+      
+      // Calculate broadcast address
+      const wildcardParts = maskParts.map(part => 255 - part);
+      const broadcastParts = networkParts.map((part, i) => part | wildcardParts[i]);
+      const broadcastAddress = broadcastParts.join('.');
+      
+      // Calculate first and last host
+      const firstHostParts = [...networkParts];
+      firstHostParts[3] += 1;
+      const firstHost = firstHostParts.join('.');
+      
+      const lastHostParts = [...broadcastParts];
+      lastHostParts[3] -= 1;
+      const lastHost = lastHostParts.join('.');
+      
+      // Calculate total and usable hosts
+      const hostBits = 32 - cidr;
+      const totalHosts = Math.pow(2, hostBits);
+      const usableHosts = cidr === 32 ? 1 : (cidr === 31 ? 2 : totalHosts - 2);
+      
+      // Get IP class and type
+      const ipClass = getIPClass(ipParts[0]);
+      const ipType = isPrivateIP(ipInput) ? 'Private' : 'Public';
+      const subnetType = getSubnetType(cidr, ipClass);
+      
+      // Get wildcard mask
+      const wildcardMask = getWildcardMask(subnetMask);
+      
+      // Display results
+      document.getElementById('result-ip').textContent = ipInput;
+      document.getElementById('result-mask').textContent = subnetMask;
+      document.getElementById('result-cidr').textContent = '/' + cidr;
+      document.getElementById('result-wildcard').textContent = wildcardMask;
+      document.getElementById('result-network').textContent = networkAddress;
+      document.getElementById('result-broadcast').textContent = broadcastAddress;
+      document.getElementById('result-first').textContent = firstHost;
+      document.getElementById('result-last').textContent = lastHost;
+      document.getElementById('result-total').textContent = totalHosts.toLocaleString();
+      document.getElementById('result-usable').textContent = usableHosts.toLocaleString();
+      document.getElementById('result-class').textContent = `Class ${ipClass}`;
+      document.getElementById('result-type').textContent = ipType;
+      document.getElementById('result-subnet-type').textContent = subnetType;
+      
+      // Binary representations
+      document.getElementById('result-ip-binary').textContent = ipToBinary(ipInput);
+      document.getElementById('result-mask-binary').textContent = ipToBinary(subnetMask);
+      document.getElementById('result-network-binary').textContent = ipToBinary(networkAddress);
+      
+      document.getElementById('results').style.display = 'block';
+    }
+
+    function showError(message) {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = `<div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; border-radius: 8px; color: #991b1b;">
+        <strong>❌ Error:</strong> ${message}
+      </div>`;
+      resultsDiv.style.display = 'block';
+    }
+
+    function clearCalculator() {
+      document.getElementById('ip-address').value = '';
+      document.getElementById('cidr-input').value = '';
+      document.getElementById('decimal-input').value = '';
+      document.getElementById('results').style.display = 'none';
+    }
+
+    // VLSM Calculator - Proper Variable Length Subnet Mask calculation
+    function calculateVLSM() {
+      const networkInput = document.getElementById('vlsm-network').value.trim();
+      let cidrInput = document.getElementById('vlsm-cidr').value.trim().replace('/', '');
+      const inputMethod = document.getElementById('vlsm-input-method').value;
+      
+      if (!isValidIP(networkInput)) {
+        showVLSMError('Please enter a valid network address');
+        return;
+      }
+      
+      const baseCidr = parseInt(cidrInput);
+      if (isNaN(baseCidr) || baseCidr < 0 || baseCidr > 30) {
+        showVLSMError('Please enter a valid CIDR (0-30 for subnetting)');
+        return;
+      }
+      
+      let hostsData = [];
+      
+      if (inputMethod === 'dynamic') {
+        // Get data from dynamic inputs
+        const hostRows = document.querySelectorAll('.host-input-row');
+        hostRows.forEach(row => {
+          const nameInput = row.querySelector('.host-name-input').value.trim();
+          const countInput = row.querySelector('.host-count-input').value.trim();
+          const count = parseInt(countInput);
+          
+          if (!isNaN(count) && count > 0) {
+            hostsData.push({
+              name: nameInput || null,
+              count: count
+            });
+          }
+        });
+      } else {
+        // Get data from comma-separated input
+        const hostsInput = document.getElementById('vlsm-hosts').value.trim();
+        const hostsArray = hostsInput.split(',').map(h => parseInt(h.trim())).filter(h => !isNaN(h) && h > 0);
+        hostsArray.forEach(count => {
+          hostsData.push({ name: null, count: count });
+        });
+      }
+      
+      if (hostsData.length === 0) {
+        showVLSMError('Please enter at least one subnet requirement');
+        return;
+      }
+      
+      // Sort in descending order by count (VLSM requirement - largest first)
+      hostsData.sort((a, b) => b.count - a.count);
+      
+      // Check if network can accommodate all subnets
+      const totalAvailableHosts = Math.pow(2, 32 - baseCidr);
+      
+      // Calculate subnets with VARIABLE subnet masks
+      const subnets = [];
+      const networkBytes = networkInput.split('.').map(Number);
+      let currentIP = (networkBytes[0] << 24) + (networkBytes[1] << 16) + (networkBytes[2] << 8) + networkBytes[3];
+      
+      for (let i = 0; i < hostsData.length; i++) {
+        const hostData = hostsData[i];
+        const requiredHosts = hostData.count;
+        const subnetName = hostData.name;
+        
+        // Calculate the VARIABLE CIDR for THIS specific subnet
+        // Each subnet gets its own optimized mask based on host requirements
+        let subnetCidr;
+        let hostBitsNeeded;
+        
+        // Find minimum host bits needed
+        if (requiredHosts === 1) {
+          hostBitsNeeded = 0;
+          subnetCidr = 32;
+        } else if (requiredHosts === 2) {
+          hostBitsNeeded = 2;
+          subnetCidr = 30;
+        } else {
+          // Need to account for network and broadcast addresses
+          hostBitsNeeded = Math.ceil(Math.log2(requiredHosts + 2));
+          subnetCidr = 32 - hostBitsNeeded;
+        }
+        
+        // Ensure subnet doesn't exceed base network
+        if (subnetCidr < baseCidr) {
+          showVLSMError(`Subnet ${i + 1} requires ${requiredHosts} hosts but exceeds base network capacity. Try a larger base network (smaller CIDR).`);
+          return;
+        }
+        
+        // Calculate this subnet's VARIABLE mask (key feature of VLSM!)
+        const subnetMask = cidrToMask(subnetCidr);
+        const blockSize = Math.pow(2, 32 - subnetCidr);
+        
+        // Convert current IP to octets
+        const currentOctets = [
+          (currentIP >>> 24) & 255,
+          (currentIP >>> 16) & 255,
+          (currentIP >>> 8) & 255,
+          currentIP & 255
+        ];
+        
+        const networkAddr = currentOctets.join('.');
+        
+        // Calculate broadcast for this specific subnet
+        const broadcastIP = currentIP + blockSize - 1;
+        const broadcastOctets = [
+          (broadcastIP >>> 24) & 255,
+          (broadcastIP >>> 16) & 255,
+          (broadcastIP >>> 8) & 255,
+          broadcastIP & 255
+        ];
+        const broadcastAddr = broadcastOctets.join('.');
+        
+        // Calculate first and last usable host
+        const firstHostIP = currentIP + 1;
+        const firstHostOctets = [
+          (firstHostIP >>> 24) & 255,
+          (firstHostIP >>> 16) & 255,
+          (firstHostIP >>> 8) & 255,
+          firstHostIP & 255
+        ];
+        const firstHost = firstHostOctets.join('.');
+        
+        const lastHostIP = broadcastIP - 1;
+        const lastHostOctets = [
+          (lastHostIP >>> 24) & 255,
+          (lastHostIP >>> 16) & 255,
+          (lastHostIP >>> 8) & 255,
+          lastHostIP & 255
+        ];
+        const lastHost = lastHostOctets.join('.');
+        
+        const usableHosts = subnetCidr === 32 ? 1 : (subnetCidr === 31 ? 2 : blockSize - 2);
+        
+        subnets.push({
+          number: i + 1,
+          name: subnetName,
+          requiredHosts,
+          networkAddr,
+          cidr: subnetCidr,  // VARIABLE - changes for each subnet!
+          subnetMask,        // VARIABLE - changes for each subnet!
+          firstHost,
+          lastHost,
+          broadcast: broadcastAddr,
+          usableHosts,
+          blockSize
+        });
+        
+        // Move to next available network address
+        currentIP += blockSize;
+        
+        // Check if we exceeded the base network
+        const baseNetworkEnd = (networkBytes[0] << 24) + (networkBytes[1] << 16) + (networkBytes[2] << 8) + networkBytes[3] + totalAvailableHosts;
+        if (currentIP > baseNetworkEnd) {
+          showVLSMError(`Not enough space in ${networkInput}/${baseCidr} for all subnets. Subnet ${i + 1} exceeds network boundary.`);
+          return;
+        }
+      }
+      
+      displayVLSMResults(subnets, networkInput, baseCidr);
+    }
+
+    function displayVLSMResults(subnets, baseNetwork, baseCidr) {
+      const output = document.getElementById('vlsm-output');
+      let html = '';
+      
+      // Add header showing base network and VLSM explanation
+      html += `
+        <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 3px solid #3b82f6; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+          <h4 style="font-weight: bold; font-size: 18px; color: #1e40af; margin-bottom: 8px;">
+            🌐 Base Network: ${baseNetwork}/${baseCidr}
+          </h4>
+          <p style="font-size: 14px; color: #374151; margin-bottom: 8px;">
+            <strong>✨ VLSM Magic:</strong> Each subnet below has a DIFFERENT subnet mask optimized for its host requirements!
+          </p>
+          <p style="font-size: 13px; color: #6b7280;">
+            This is Variable Length Subnet Masking - no IP addresses wasted! 🎯
+          </p>
+        </div>
+      `;
+      
+      subnets.forEach(subnet => {
+        const nameDisplay = subnet.name ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">📌 ${subnet.name}</div>` : '';
+        
+        html += `
+          <div class="vlsm-subnet-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div>
+                <h4 style="font-weight: bold; font-size: 18px; color: #16a34a;">Subnet ${subnet.number}</h4>
+                ${nameDisplay}
+              </div>
+              <span style="background: #dcfce7; color: #16a34a; padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 600;">
+                Needs: ${subnet.requiredHosts} hosts
+              </span>
+            </div>
+            <div style="background: #fef3c7; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-size: 13px; color: #92400e; font-weight: 600;">🎯 VARIABLE Subnet Mask:</span>
+                  <div style="font-family: 'Courier New', monospace; font-size: 16px; color: #1e40af; font-weight: bold; margin-top: 4px;">
+                    ${subnet.subnetMask} (/${subnet.cidr})
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span style="font-size: 13px; color: #92400e; font-weight: 600;">Block Size:</span>
+                  <div style="font-family: 'Courier New', monospace; font-size: 16px; color: #059669; font-weight: bold; margin-top: 4px;">
+                    ${subnet.blockSize} IPs
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8;">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                <div><strong>Network:</strong> ${subnet.networkAddr}</div>
+                <div><strong>Broadcast:</strong> ${subnet.broadcast}</div>
+                <div><strong>First Host:</strong> ${subnet.firstHost}</div>
+                <div><strong>Last Host:</strong> ${subnet.lastHost}</div>
+                <div><strong>Usable Hosts:</strong> <span style="color: #16a34a; font-weight: bold;">${subnet.usableHosts}</span></div>
+                <div><strong>Required:</strong> <span style="color: #2563eb;">${subnet.requiredHosts}</span></div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      // Add summary
+      const totalUsed = subnets.reduce((sum, s) => sum + s.blockSize, 0);
+      const totalAvailable = Math.pow(2, 32 - baseCidr);
+      const wastedIPs = totalUsed - subnets.reduce((sum, s) => sum + s.requiredHosts + 2, 0); // +2 for network & broadcast
+      
+      html += `
+        <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); border: 3px solid #22c55e; border-radius: 12px; padding: 16px; margin-top: 16px;">
+          <h4 style="font-weight: bold; font-size: 16px; color: #065f46; margin-bottom: 8px;">
+            📊 VLSM Allocation Summary
+          </h4>
+          <div style="font-size: 14px; color: #374151; line-height: 1.8;">
+            <div><strong>Total Subnets Created:</strong> ${subnets.length}</div>
+            <div><strong>Total IPs Allocated:</strong> ${totalUsed.toLocaleString()} / ${totalAvailable.toLocaleString()}</div>
+            <div><strong>Remaining IPs:</strong> ${(totalAvailable - totalUsed).toLocaleString()}</div>
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid #22c55e;">
+              <strong style="color: #16a34a;">✅ VLSM Efficiency:</strong> Each subnet has a custom-sized mask - minimal waste!
+            </div>
+          </div>
+        </div>
+      `;
+      
+      output.innerHTML = html;
+      document.getElementById('vlsm-results').style.display = 'block';
+    }
+
+    function showVLSMError(message) {
+      const resultsDiv = document.getElementById('vlsm-results');
+      const output = document.getElementById('vlsm-output');
+      output.innerHTML = `<div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; border-radius: 8px; color: #991b1b;">
+        <strong>❌ Error:</strong> ${message}
+      </div>`;
+      resultsDiv.style.display = 'block';
+    }
+
+    function clearVLSM() {
+      document.getElementById('vlsm-network').value = '';
+      document.getElementById('vlsm-cidr').value = '';
+      document.getElementById('vlsm-hosts').value = '';
+      
+      // Clear dynamic inputs
+      const container = document.getElementById('host-inputs-container');
+      container.innerHTML = `
+        <div class="host-input-row" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+          <input type="text" class="host-name-input" placeholder="Subnet name (e.g., Sales)" style="flex: 2; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+          <input type="number" class="host-count-input" placeholder="Hosts" min="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+          <button onclick="removeHostInput(this)" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">🗑️</button>
+        </div>
+      `;
+      
+      document.getElementById('vlsm-results').style.display = 'none';
+    }
+
+    // Toggle between dynamic and comma-separated input
+    function toggleVLSMInputMethod() {
+      const method = document.getElementById('vlsm-input-method').value;
+      const dynamicContainer = document.getElementById('dynamic-input-container');
+      const commaContainer = document.getElementById('comma-input-container');
+      
+      if (method === 'dynamic') {
+        dynamicContainer.style.display = 'block';
+        commaContainer.style.display = 'none';
+      } else {
+        dynamicContainer.style.display = 'none';
+        commaContainer.style.display = 'block';
+      }
+    }
+
+    // Add new host input row
+    function addHostInput() {
+      const container = document.getElementById('host-inputs-container');
+      const newRow = document.createElement('div');
+      newRow.className = 'host-input-row';
+      newRow.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
+      newRow.innerHTML = `
+        <input type="text" class="host-name-input" placeholder="Subnet name (e.g., Sales)" style="flex: 2; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+        <input type="number" class="host-count-input" placeholder="Hosts" min="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+        <button onclick="removeHostInput(this)" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">🗑️</button>
+      `;
+      container.appendChild(newRow);
+    }
+
+    // Remove host input row
+    function removeHostInput(button) {
+      const container = document.getElementById('host-inputs-container');
+      const rows = container.querySelectorAll('.host-input-row');
+      
+      // Keep at least one row
+      if (rows.length > 1) {
+        button.parentElement.remove();
+      } else {
+        // Clear the last row instead of removing it
+        const row = button.parentElement;
+        row.querySelector('.host-name-input').value = '';
+        row.querySelector('.host-count-input').value = '';
+      }
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ae78830e3e290a4',t:'MTc2NTgxODM5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
