@@ -1193,9 +1193,7 @@
       const ipClass = getIPClass(ipParts[0]);
       const ipType = isPrivateIP(ipInput) ? 'Private' : 'Public';
       const subnetType = getSubnetType(cidr, ipClass);
-      
-      // Get wildcard mask
-      const wildcardMask = getWildcardMask(subnetMask);
+     
       
       // Display results
       document.getElementById('result-ip').textContent = ipInput;
