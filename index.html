@@ -1171,9 +1171,12 @@
       const networkAddress = networkParts.join('.');
       
       // Calculate broadcast address
-      const wildcardParts = maskParts.map(part => 255 - part);
-      const broadcastParts = networkParts.map((part, i) => part | wildcardParts[i]);
-      const broadcastAddress = broadcastParts.join('.');
+     const broadcastParts = networkParts.map((part, i) => {
+  return part | (255 - maskParts[i]);
+});
+
+const broadcastAddress = broadcastParts.join('.');
+
       
       // Calculate first and last host
       const firstHostParts = [...networkParts];
