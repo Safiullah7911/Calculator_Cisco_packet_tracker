@@ -316,6 +316,8 @@
          </div>
          <div class="result-item"><span class="result-label">Broadcast Address:</span> <span class="result-value" id="result-broadcast">-</span>
          </div>
+         <div class="result-item"><span class="result-label">Default Gateway:</span><span class="result-value" id="result-gateway">-</span>
+        </div>
          <div class="result-item"><span class="result-label">First Usable Host:</span> <span class="result-value" id="result-first">-</span>
          </div>
          <div class="result-item"><span class="result-label">Last Usable Host:</span> <span class="result-value" id="result-last">-</span>
@@ -841,7 +843,7 @@
       main_title: "Professional Subnet Calculator",
       subtitle: "VLSM & FLSM | All Classes A, B, C Support | Complete Networking Tool",
       calculator_heading: "Professional Subnet Calculator",
-      footer_text: "© 2024 Professional Subnet Calculator | Complete VLSM & FLSM Guide for Network Students",
+      footer_text: "© 2025 Professional Subnet Calculator | Complete VLSM & FLSM Guide for Network Students",
       primary_color: "#3b82f6",
       secondary_color: "#0ea5e9",
       accent_color: "#22c55e",
@@ -850,7 +852,7 @@
       font_family: "system-ui, -apple-system, sans-serif",
       font_size: 16
     };
-
+       
     async function onConfigChange(config) {
       const customFont = config.font_family || defaultConfig.font_family;
       const baseFontStack = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
@@ -1010,11 +1012,6 @@
       ).join('').split('1').length - 1;
     }
 
-    // Calculate wildcard mask
-    function getWildcardMask(subnetMask) {
-      return subnetMask.split('.').map(octet => 255 - parseInt(octet)).join('.');
-    }
-
     // Get IP class
     function getIPClass(firstOctet) {
       if (firstOctet >= 1 && firstOctet <= 126) return 'A';
@@ -1135,6 +1132,7 @@ const broadcastAddress = broadcastParts.join('.');
       document.getElementById('result-network').textContent = networkAddress;
       document.getElementById('result-broadcast').textContent = broadcastAddress;
       document.getElementById('result-first').textContent = firstHost;
+      document.getElementById('result-gateway').textContent = firstHost;
       document.getElementById('result-last').textContent = lastHost;
       document.getElementById('result-total').textContent = totalHosts.toLocaleString();
       document.getElementById('result-usable').textContent = usableHosts.toLocaleString();
